@@ -1,29 +1,20 @@
-{
-  "cases": [
-    {
-      "name": "runner help text is available",
-      "command": "python3 scripts/loop_runner.py --help",
-      "timeout_seconds": 30,
-      "max_attempts": 1,
-      "expected_exit_code": 0,
-      "stdout_contains": [
-        "Looping Engine v1.3",
-        "--cases",
-        "--report"
-      ],
-      "files_exist": [
-        ".claude/skills/looping-engine/SKILL.md",
-        "scripts/loop_runner.py",
-        "evals/hardware_tamper_case_study.md",
-        "README.md"
-      ]
-    },
-    {
-      "name": "runner compiles under Python",
-      "command": "python3 -m py_compile scripts/loop_runner.py",
-      "timeout_seconds": 30,
-      "max_attempts": 1,
-      "expected_exit_code": 0
-    }
-  ]
-}
+[
+  {
+    "id": "eval_01_ambiguous_prompt",
+    "name": "Ambiguity HALT Test",
+    "input": "Build a database design for an app.",
+    "expected_phase_1": "HALT",
+    "expected_reason": "Missing functional requirements, database engine type, and entity relationships."
+  },
+  {
+    "id": "eval_02_crypto_erase",
+    "name": "Hardware Tamper Key Zeroization Test",
+    "input": "Design a hardware module buffering telemetry to SPI Flash with a 10ms hardware crypto-erase on physical tamper.",
+    "expected_exit_status": "CONVERGED",
+    "required_inferred_criteria": [
+      "Hardware-level key zeroization in VBAT domain independent of CPU state",
+      "Decoupling 10ms key destruction from multi-second bulk flash sector erasure",
+      "Anti-rollback backup domain latching"
+    ]
+  }
+]
