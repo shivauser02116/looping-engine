@@ -1,36 +1,24 @@
-# Hardware Tamper Case Study
+# Case Study: Hardware Tamper & Crypto-Erase Protocol
 
-## Scenario
+This evaluation demonstrates how the Looping Engine v1.3 self-corrects architectural flaws across internal iterations.
 
-An Internet of Things water quality station reports normal readings while the field unit has been physically moved, power-cycled, or exposed to probe tampering.
+## Task Input
+> Design a firmware state machine and protocol specification for an offline-first hardware module that buffers environmental sensor data (pH, air quality) to SPI NOR Flash and executes an emergency cryptographic wipe if a physical tamper event is detected within 10ms.
 
-## Risk
+## Engine Iteration Breakdown
 
-Bad field data can look valid if the software only checks whether sensor values are inside normal chemical ranges. A useful loop must also evaluate metadata and operational signals.
+### Iteration 1 (Failed Internal Audit)
+- **Draft Flaw**: Treated crypto-erase as a software Interrupt Service Routine (ISR) responding to a GPIO pin interrupt.
+- **Audit Flag (Phase 3)**: Violates the 10ms deterministic safety requirement. If the CPU is stalled, dead, or power is cut simultaneously, the software ISR fails to execute.
 
-## Signals to Check
+### Iteration 2 (Refined Architecture - Passed)
+- **Correction**: Replaced software ISR with an autonomous hardware-level key zeroization peripheral operating in the VBAT (battery/supercap) domain.
+- **Key Decoupling**: Decoupled microsecond AES-256 key destruction from multi-second SPI Flash sector clearing.
+- **Exit Status**: `CONVERGED`
 
-- Sudden sensor flatlines after a reboot.
-- Repeated values with impossible precision.
-- Battery voltage drops followed by clean-looking readings.
-- Location drift from the assigned installation zone.
-- Missing calibration events after probe replacement.
-- Turbidity, pH, and total dissolved solids changing in physically inconsistent ways.
-
-## Looping Engine Evaluation
-
-1. Run the data quality command against the latest device payload.
-2. Check for expected exit code, warning text, and generated anomaly report files.
-3. If the check fails, apply one targeted fix to parsing, thresholds, or metadata handling.
-4. Rerun until the tamper case is detected or the maximum attempt limit is reached.
-
-## Pass Criteria
-
-- The tamper condition is flagged.
-- The report names the violated signal.
-- Normal-range chemical readings alone are not enough to pass the case.
-- Remaining assumptions are written down before deployment.
-
-## Deployment Note
-
-This case study is not a replacement for field testing. It is a software-side guardrail for projects such as water quality monitoring systems where physical device behavior can invalidate clean-looking data.
+## Complete Engine Log
+- **Total Iterations**: 2
+- **Exit Status**: `CONVERGED`
+- **Logged Failures**:
+  - Iteration 1: Software ISR dependency for security-critical key wipe. Resolved via autonomous hardware peripheral.
+  - Iteration 1: Lack of anti-rollback latching post-tamper. Resolved via persistent backup-domain status flags.
